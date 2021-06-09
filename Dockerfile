@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-small-latest
+FROM osgeo/gdal:ubuntu-small-3.2.3
 #====================================================== INSTALL GO
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		ca-certificates \
