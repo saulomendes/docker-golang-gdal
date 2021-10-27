@@ -1,0 +1,4 @@
+docker login
+
+docker build -t saulomendes/golang-gdal:latest .
+docker push saulomendes/golang-gdal:latest
