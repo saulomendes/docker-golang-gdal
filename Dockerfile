@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-full-3.2.3
+FROM osgeo/gdal:ubuntu-small-3.3.2
 
 #====================================================== INSTALL GO
 RUN apt-get update && apt-get install -y --no-install-recommends \
