@@ -1,92 +1,97 @@
 FROM osgeo/gdal:ubuntu-small-3.3.2
 
 #====================================================== INSTALL GO
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN set -eux; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
 		ca-certificates \
 		curl \
 		netbase \
 		wget \
 		gnupg \
-	&& rm -rf /var/lib/apt/lists/*
+	; \
+	rm -rf /var/lib/apt/lists/*
 
-# https://github.com/docker-library/golang/blob/fc960e720b9ba539812525220a272aa3961d359c/1.16/buster/Dockerfile
+# https://github.com/docker-library/golang/blob/8c4f2e21fa0194a24288d8c126a5d15b51c221cb/1.17/bullseye/Dockerfile
 #
 # NOTE: THIS DOCKERFILE IS GENERATED VIA "apply-templates.sh"
 #
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-# FROM buildpack-deps:buster-scm
+# FROM buildpack-deps:bullseye-scm
 
-# gcc for cgo
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# install cgo-related dependencies
+RUN set -eux; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
 		g++ \
 		gcc \
 		libc6-dev \
 		make \
 		pkg-config \
-	&& rm -rf /var/lib/apt/lists/*
+	; \
+	rm -rf /var/lib/apt/lists/*
 
 ENV PATH /usr/local/go/bin:$PATH
 
-ENV GOLANG_VERSION 1.16.2
+ENV GOLANG_VERSION 1.17.2
 
 RUN set -eux; \
-	\
-	dpkgArch="$(dpkg --print-architecture)"; \
+	arch="$(dpkg --print-architecture)"; arch="${arch##*-}"; \
 	url=; \
-	case "${dpkgArch##*-}" in \
+	case "$arch" in \
 		'amd64') \
-			url='https://storage.googleapis.com/golang/go1.16.2.linux-amd64.tar.gz'; \
-			sha256='542e936b19542e62679766194364f45141fde55169db2d8d01046555ca9eb4b8'; \
+			url='https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz'; \
+			sha256='f242a9db6a0ad1846de7b6d94d507915d14062660616a61ef7c808a76e4f1676'; \
 			;; \
 		'armel') \
 			export GOARCH='arm' GOARM='5' GOOS='linux'; \
 			;; \
 		'armhf') \
-			url='https://storage.googleapis.com/golang/go1.16.2.linux-armv6l.tar.gz'; \
-			sha256='49765b1ac36f77a84ce8186b08713c3811db5426e4ecfaa4344453e12d756c22'; \
+			url='https://dl.google.com/go/go1.17.2.linux-armv6l.tar.gz'; \
+			sha256='04d16105008230a9763005be05606f7eb1c683a3dbf0fbfed4034b23889cb7f2'; \
 			;; \
 		'arm64') \
-			url='https://storage.googleapis.com/golang/go1.16.2.linux-arm64.tar.gz'; \
-			sha256='6924601d998a0917694fd14261347e3798bd2ad6b13c4d7f2edd70c9d57f62ab'; \
+			url='https://dl.google.com/go/go1.17.2.linux-arm64.tar.gz'; \
+			sha256='a5a43c9cdabdb9f371d56951b14290eba8ce2f9b0db48fb5fc657943984fd4fc'; \
 			;; \
 		'i386') \
-			url='https://storage.googleapis.com/golang/go1.16.2.linux-386.tar.gz'; \
-			sha256='3638abf8e8272a4ddc3e5189487c932d680abfb151e2c48ae18c9a04a90ded73'; \
+			url='https://dl.google.com/go/go1.17.2.linux-386.tar.gz'; \
+			sha256='8617f2e40d51076983502894181ae639d1d8101bfbc4d7463a2b442f239f5596'; \
 			;; \
 		'mips64el') \
 			export GOARCH='mips64le' GOOS='linux'; \
 			;; \
 		'ppc64el') \
-			url='https://storage.googleapis.com/golang/go1.16.2.linux-ppc64le.tar.gz'; \
-			sha256='e1dcc9b460b2d522added8dfce764a06c5e455c8047b45b67a06f7f5ab19c4e0'; \
+			url='https://dl.google.com/go/go1.17.2.linux-ppc64le.tar.gz'; \
+			sha256='12e2dc7e0ffeebe77083f267ef6705fec1621cdf2ed6489b3af04a13597ed68d'; \
 			;; \
 		's390x') \
-			url='https://storage.googleapis.com/golang/go1.16.2.linux-s390x.tar.gz'; \
-			sha256='a686743b0803d54e051756ce946d9d72436f23e9f815739c947934e0052bf9ff'; \
+			url='https://dl.google.com/go/go1.17.2.linux-s390x.tar.gz'; \
+			sha256='c4b2349a8d11350ca038b8c57f3cc58dc0b31284bcbed4f7fca39aeed28b4a51'; \
 			;; \
-		*) echo >&2 "error: unsupported architecture '$dpkgArch' (likely packaging update needed)"; exit 1 ;; \
+		*) echo >&2 "error: unsupported architecture '$arch' (likely packaging update needed)"; exit 1 ;; \
 	esac; \
 	build=; \
 	if [ -z "$url" ]; then \
 # https://github.com/golang/go/issues/38536#issuecomment-616897960
 		build=1; \
-		url='https://storage.googleapis.com/golang/go1.16.2.src.tar.gz'; \
-		sha256='37ca14287a23cb8ba2ac3f5c3dd8adbc1f7a54b9701a57824bf19a0b271f83ea'; \
+		url='https://dl.google.com/go/go1.17.2.src.tar.gz'; \
+		sha256='2255eb3e4e824dd7d5fcdc2e7f84534371c186312e546fb1086a34c17752f431'; \
 		echo >&2; \
-		echo >&2 "warning: current architecture ($dpkgArch) does not have a corresponding Go binary release; will be building from source"; \
+		echo >&2 "warning: current architecture ($arch) does not have a compatible Go binary release; will be building from source"; \
 		echo >&2; \
 	fi; \
 	\
-	wget -O go.tgz.asc "$url.asc" --progress=dot:giga; \
+	wget -O go.tgz.asc "$url.asc"; \
 	wget -O go.tgz "$url" --progress=dot:giga; \
-	echo "$sha256 *go.tgz" | sha256sum --strict --check -; \
+	echo "$sha256 *go.tgz" | sha256sum -c -; \
 	\
 # https://github.com/golang/go/issues/14739#issuecomment-324767697
-	export GNUPGHOME="$(mktemp -d)"; \
+	GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; \
 # https://www.google.com/linuxrepositories/
-	gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys 'EB4C 1BFD 4F04 2F6D DDCC EC91 7721 F63B D38B 4796'; \
+	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys 'EB4C 1BFD 4F04 2F6D DDCC EC91 7721 F63B D38B 4796'; \
 	gpg --batch --verify go.tgz.asc go.tgz; \
 	gpgconf --kill all; \
 	rm -rf "$GNUPGHOME" go.tgz.asc; \
