@@ -1,4 +1,6 @@
-docker login
+export $(cat .env | xargs)
 
-docker build -t saulomendes/golang-gdal:latest .
+echo $PASS | docker login  -u $USER  --password-stdin
+
+docker buildx build --platform linux/amd64  -t saulomendes/golang-gdal:latest .
 docker push saulomendes/golang-gdal:latest
